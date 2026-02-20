@@ -3,47 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --bg-app: #F5F5F7;
-  /* Apple-like light grey */
-  --glass-white: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.9);
-  --text-primary: #1d1d1f;
-  /* Deep Charcoal */
-  --text-secondary: #86868b;
-  /* Apple Grey */
-  --accent-black: #000000;
-  --gloss-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+  --bg-app: #000000;
+  --glass-panel: rgba(255, 255, 255, 0.03);
+  /* Extremely subtle glass */
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --text-neon: #ffffff;
+  --text-muted: #a1a1aa;
+  --neon-glow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
 body {
   background-color: var(--bg-app);
-  color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text-neon);
+  font-family: 'Inter', -apple-system, sans-serif;
   overflow: hidden;
 }
 
-/* Premium Glass Card Effect */
-.glass-card {
-  background: var(--glass-white);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+/* The New "Neon Glass" Card */
+.neon-glass {
+  background: var(--glass-panel);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--gloss-shadow);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Smooth Fade In */
-.animate-fade-in {
-  animation: fadeIn 0.6s ease-out forwards;
+.neon-glass:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  transform: scale(1.005);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Scrollbar hiding */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

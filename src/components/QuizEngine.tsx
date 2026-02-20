@@ -3,7 +3,7 @@ import { ChevronRight, CheckCircle, XCircle, Timer } from 'lucide-react';
 import { useGameControls } from '../hooks/useGameControls';
 import { playCorrect, playWrong, playClick } from '../utils/sound';
 
-const QuizEngine = () => {
+const QuizEngine = ({ subjectFilter }: { subjectFilter?: string | null }) => {
     const [questions, setQuestions] = useState<any[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -19,15 +19,20 @@ const QuizEngine = () => {
         const fetchQuestions = async () => {
             try {
                 const data = await window.api.loadQuestions();
-                if (data && data.length > 0) {
-                    setQuestions(data);
+                let finalData = data;
+                if (data && data.length > 0 && subjectFilter) {
+                    finalData = data.filter((q: any) => q.subject === subjectFilter);
+                }
+
+                if (finalData && finalData.length > 0) {
+                    setQuestions(finalData);
                 } else {
                     setQuestions([{
                         id: 1,
-                        question: "Which component of the CPU performs arithmetic operations?",
+                        question: subjectFilter ? `No questions found for ${subjectFilter}.` : "Which component of the CPU performs arithmetic operations?",
                         options: ["CU", "ALU", "Memory", "Register"],
                         answer: "ALU",
-                        subject: "Computer Basics"
+                        subject: subjectFilter || "Computer Basics"
                     }]);
                 }
             } catch (error) {
@@ -37,7 +42,7 @@ const QuizEngine = () => {
             }
         };
         fetchQuestions();
-    }, []);
+    }, [subjectFilter]);
 
     // 2. Timer Logic
     useEffect(() => {
