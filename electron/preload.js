@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld('api', {
     // 4. Import New Questions (Raw JSON content)
     importQuestions: (jsonData) => ipcRenderer.invoke('import-questions', jsonData),
 
+    // Get all analytics/logs
+    getLogs: () => ipcRenderer.invoke('get-logs'),
+
     // 5. App Window Controls
     minimize: () => ipcRenderer.send('minimize-window'),
     close: () => ipcRenderer.send('close-window')

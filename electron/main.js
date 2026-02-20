@@ -20,8 +20,13 @@ function createWindow() {
             nodeIntegration: false,
             contextIsolation: true,
         },
-        backgroundColor: '#0f172a' // Matches your tailwind bg-slate-900
+        backgroundColor: '#F5F5F7', // Apple-like light grey background
+        show: false
     });
+
+    // 1. Force Maximize/Full Screen on Launch
+    mainWindow.maximize();
+    mainWindow.show();
 
     if (app.isPackaged) {
         mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
@@ -68,6 +73,12 @@ app.whenReady().then(() => {
         const updatedDB = [...currentDB, ...newQuestions];
         fs.writeFileSync(QUESTIONS_PATH, JSON.stringify(updatedDB, null, 2));
         return updatedDB.length;
+    });
+
+    // Get logs for dashboard analytics
+    ipcMain.handle('get-logs', async () => {
+        if (!fs.existsSync(LOGS_PATH)) return [];
+        return JSON.parse(fs.readFileSync(LOGS_PATH, 'utf-8'));
     });
 
     // 5. Window Controls
