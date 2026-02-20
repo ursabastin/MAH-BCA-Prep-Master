@@ -1,0 +1,41 @@
+[
+    {
+        "id": "1",
+        "question": "Which of the following is NOT a characteristic of a computer?",
+        "options": [
+            "Speed",
+            "Accuracy",
+            "Diligence",
+            "IQ"
+        ],
+        "correctAnswer": "IQ",
+        "explanation": "Computers do not have their own IQ; they follow the instructions given by humans.",
+        "category": "Computer Fundamentals"
+    },
+    {
+        "id": "2",
+        "question": "What is the full form of ALU?",
+        "options": [
+            "Arithmetic Logic Unit",
+            "Arithmetic Local Unit",
+            "Advanced Logic Unit",
+            "Array Logic Unit"
+        ],
+        "correctAnswer": "Arithmetic Logic Unit",
+        "explanation": "ALU stands for Arithmetic Logic Unit, the part of the CPU that performs arithmetic and logic operations.",
+        "category": "Computer Fundamentals"
+    },
+    {
+        "id": "3",
+        "question": "Which language is used for creating web pages?",
+        "options": [
+            "C++",
+            "Java",
+            "HTML",
+            "Python"
+        ],
+        "correctAnswer": "HTML",
+        "explanation": "HTML (HyperText Markup Language) is the standard markup language for creating web pages.",
+        "category": "Networking"
+    }
+]
