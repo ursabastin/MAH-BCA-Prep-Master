@@ -1,106 +1,78 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs/promises';
+const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
+const fs = require('fs');
 
-const isDev = !app.isPackaged;
+// Path to your local_data folder
+const DATA_DIR = path.join(__dirname, '..', 'local_data');
+const CONFIG_PATH = path.join(DATA_DIR, 'config.json');
+const QUESTIONS_PATH = path.join(DATA_DIR, 'question_bank.json');
+const LOGS_PATH = path.join(DATA_DIR, 'quiz_log.json');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+let mainWindow;
 
-async function createWindow() {
-    const mainWindow = new BrowserWindow({
+function createWindow() {
+    mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
-        backgroundColor: '#0a0a0c',
+        frame: false, // Neo-glass look requires removing the default frame
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
-            contextIsolation: true,
             nodeIntegration: false,
+            contextIsolation: true,
         },
-        titleBarStyle: 'hidden',
-        titleBarOverlay: {
-            color: '#0a0a0c',
-            symbolColor: '#ffffff',
-            height: 30
-        }
+        backgroundColor: '#0f172a' // Matches your tailwind bg-slate-900
     });
 
-    const startUrl = isDev
-        ? 'http://localhost:5173'
-        : `file://${path.join(__dirname, '../dist/index.html')}`;
-
-    mainWindow.loadURL(startUrl);
-
-    if (isDev) {
-        mainWindow.webContents.openDevTools();
-    }
+    // Load Vite Dev Server URL
+    mainWindow.loadURL('http://localhost:5173');
+    // Note: In production, this changes to loading the build file.
 }
 
 app.whenReady().then(() => {
     createWindow();
 
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    // --- IPC HANDLERS (The Logic) ---
+
+    // 1. Read Config
+    ipcMain.handle('load-config', async () => {
+        if (!fs.existsSync(CONFIG_PATH)) return { theme: 'dark' };
+        return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
     });
+
+    // 2. Read Questions
+    ipcMain.handle('load-questions', async () => {
+        if (!fs.existsSync(QUESTIONS_PATH)) return [];
+        return JSON.parse(fs.readFileSync(QUESTIONS_PATH, 'utf-8'));
+    });
+
+    // 3. Save Attempt Log
+    ipcMain.handle('save-attempt', async (event, logData) => {
+        let logs = [];
+        if (fs.existsSync(LOGS_PATH)) {
+            logs = JSON.parse(fs.readFileSync(LOGS_PATH, 'utf-8'));
+        }
+        logs.push({ ...logData, timestamp: new Date().toISOString() });
+        fs.writeFileSync(LOGS_PATH, JSON.stringify(logs, null, 2));
+        return true;
+    });
+
+    // 4. Import Questions (Append mode)
+    ipcMain.handle('import-questions', async (event, newQuestions) => {
+        let currentDB = [];
+        if (fs.existsSync(QUESTIONS_PATH)) {
+            currentDB = JSON.parse(fs.readFileSync(QUESTIONS_PATH, 'utf-8'));
+        }
+        // Simple deduplication based on Question Text could be added here
+        const updatedDB = [...currentDB, ...newQuestions];
+        fs.writeFileSync(QUESTIONS_PATH, JSON.stringify(updatedDB, null, 2));
+        return updatedDB.length;
+    });
+
+    // 5. Window Controls
+    ipcMain.on('minimize-window', () => mainWindow.minimize());
+    ipcMain.on('close-window', () => app.quit());
 });
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
-});
-
-// IPC Handlers for File System Access
-ipcMain.handle('read-json', async (event, filePath) => {
-    try {
-        const fullPath = path.isAbsolute(filePath)
-            ? filePath
-            : path.join(app.getAppPath(), filePath);
-
-        const data = await fs.readFile(fullPath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error reading JSON:', error);
-        throw error;
-    }
-});
-
-ipcMain.handle('write-json', async (event, { filePath, data }) => {
-    try {
-        const fullPath = path.isAbsolute(filePath)
-            ? filePath
-            : path.join(app.getAppPath(), filePath);
-
-        // Ensure directory exists
-        await fs.mkdir(path.dirname(fullPath), { recursive: true });
-
-        await fs.writeFile(fullPath, JSON.stringify(data, null, 2), 'utf8');
-        return { success: true };
-    } catch (error) {
-        console.error('Error writing JSON:', error);
-        throw error;
-    }
-});
-
-ipcMain.handle('append-quiz-log', async (event, logEntry) => {
-    try {
-        const logPath = path.join(app.getAppPath(), 'local_data/quiz_log.json');
-        let logs = [];
-        try {
-            const data = await fs.readFile(logPath, 'utf8');
-            logs = JSON.parse(data);
-        } catch (e) {
-            // If file doesn't exist or is invalid, start with empty array
-        }
-
-        logs.push({
-            ...logEntry,
-            timestamp: new Date().toISOString()
-        });
-
-        await fs.writeFile(logPath, JSON.stringify(logs, null, 2), 'utf8');
-        return { success: true };
-    } catch (error) {
-        console.error('Error appending quiz log:', error);
-        throw error;
-    }
 });
