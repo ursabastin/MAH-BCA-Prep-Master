@@ -1,11 +1,14 @@
 export interface IElectronAPI {
-    readJSON: (filePath: string) => Promise<any>;
-    writeJSON: (filePath: string, data: any) => Promise<{ success: boolean }>;
-    appendQuizLog: (logEntry: any) => Promise<{ success: boolean }>;
+    loadConfig: () => Promise<any>;
+    loadQuestions: () => Promise<any>;
+    saveAttempt: (logData: any) => Promise<boolean>;
+    importQuestions: (jsonData: any) => Promise<number>;
+    minimize: () => void;
+    close: () => void;
 }
 
 declare global {
     interface Window {
-        electronAPI: IElectronAPI;
+        api: IElectronAPI;
     }
 }
