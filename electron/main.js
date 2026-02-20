@@ -23,9 +23,11 @@ function createWindow() {
         backgroundColor: '#0f172a' // Matches your tailwind bg-slate-900
     });
 
-    // Load Vite Dev Server URL
-    mainWindow.loadURL('http://localhost:5173');
-    // Note: In production, this changes to loading the build file.
+    if (app.isPackaged) {
+        mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
+    } else {
+        mainWindow.loadURL('http://localhost:5173');
+    }
 }
 
 app.whenReady().then(() => {
